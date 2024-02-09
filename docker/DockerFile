@@ -1,0 +1,69 @@
+# Usa una imagen base con PHP y Apache
+FROM php:8.1-apache
+
+# Etiqueta de información sobre el creador
+LABEL maintainer="Adrian <adrianescalada@gmail.com>"
+
+# Instala las dependencias necesarias para laravel
+RUN apt-get update && \
+    apt-get install -y \
+    unzip \
+    git \
+    libicu-dev \
+    libzip-dev \
+    nodejs npm \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instala y habilita las extensiones de PHP necesarias para laravel
+RUN docker-php-ext-configure intl && \
+    docker-php-ext-install \
+    pdo_mysql \
+    intl \
+    zip
+
+# Instala y habilita la extensión MongoDB para PHP
+RUN pecl install mongodb && \
+    docker-php-ext-enable mongodb
+
+# Habilita la extensión MongoDB para PHP
+RUN docker-php-ext-enable mongodb
+
+
+# Instala Composer globalmente
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Imprime el contenido del directorio en el contenedor (para propósitos de depuración)
+RUN ls -al
+
+# Establece el directorio de trabajo dentro del contenedor
+WORKDIR /var/www/laravel
+
+# Establecemos la raíz web de Apache en el directorio público del proyecto
+RUN sed -ri -e 's!/var/www/laravel!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+ENV APACHE_DOCUMENT_ROOT /var/www/laravel/public
+
+# Copia el código fuente de la aplicación laravel al contenedor
+COPY . .
+
+# Instala las dependencias del proyecto utilizando Composer
+RUN export COMPOSER_ALLOW_SUPERUSER=1 && composer install --no-scripts --no-interaction
+
+# Enable a2mods
+RUN a2enmod rewrite
+RUN a2enmod headers
+RUN a2enmod proxy
+RUN a2enmod proxy_http
+RUN a2enmod proxy_wstunnel
+
+# Cambia los permisos para que Apache pueda escribir en ciertos directorios
+RUN chown -R www-data:www-data /var/
+RUN chmod -R 777 /var/www/laravel
+
+# Expone el puerto 80 para que Apache pueda escuchar
+EXPOSE 80
+
+# Comando que se ejecuta cuando se inicia el contenedor
+CMD ["apache2-foreground"]
+
+
