@@ -1,5 +1,7 @@
 
-<h1 align="center">Simple Crud Laravel 10, Mysql and Docker.</h1>
+<h1 align="center">Laravel 10 - Mysql - Docker</h1> 
+
+## <div align="center">Basic Product and Calendar Crud </div>
 
 ###  :heavy_check_mark:	Requirements
 
@@ -21,8 +23,9 @@
 
 ### :hammer: Project Features
 
-- Simple crud of product
 - Integration with template AdminLte 
+- Simple crud of product
+- Calendar Manager (List,Move, Add, Delete)
 
 ### :rocket: Technologies Used
 
@@ -38,9 +41,14 @@
 
 ### :heavy_check_mark: Images:
 
-![Buscador con laravel y mongo](/capture.png)
+#####Basic Crud of Products
+![Products](/capture.png)
 
+#####List
+![Calendar](/calendar.png)
 
+#####Add Event
+![Calendar](/calendar_add_event.png)
 
-
-
+#####Delete Event
+![Calendar](/calendar_delete_event.png)

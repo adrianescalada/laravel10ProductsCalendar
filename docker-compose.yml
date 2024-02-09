@@ -7,7 +7,7 @@ networks:
   laravel_network:
 services:
   app:
-    container_name: laravel_app_milk
+    container_name: laravel_app_admin
     build:
       context: ./
       dockerfile: DockerFile
@@ -22,7 +22,7 @@ services:
   db:
     image: mysql:5.7
     platform: linux/amd64
-    container_name: laravel_db_milk
+    container_name: laravel_db_admin
     ports:
       - "3307:3306"
     volumes:
@@ -31,12 +31,12 @@ services:
       MYSQL_ROOT_PASSWORD: laravel2024!
       MYSQL_USER: laravel
       MYSQL_PASSWORD: secret
-      MYSQL_DATABASE: milkbank
+      MYSQL_DATABASE: laravel
     networks:
       - laravel_network
   redis:
     image: redis:7.2-alpine
-    container_name: laravel_redis_milk
+    container_name: laravel_redis_admin
     ports:
       - "6379:6379"
     environment:
@@ -46,7 +46,7 @@ services:
       - laravel_network
   phpmyadmin:
        image: phpmyadmin/phpmyadmin
-       container_name: laravel_phpmyadmin_milk
+       container_name: laravel_phpmyadmin_admin
        ports:
            - "8081:80"
        volumes:
@@ -62,6 +62,6 @@ services:
         - "27017:27017"
        volumes:
         - mongodb-data:/data/db
-       container_name: laravel_mongo_db_milk
+       container_name: laravel_mongo_db_admin
        networks:
         - laravel_network

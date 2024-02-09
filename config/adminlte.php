@@ -309,8 +309,13 @@ return [
         [
             'text'        => 'Products',
             'url'         => 'products',
-            'icon'        => 'far fa-fw fa-file',
-            'label'       => "",
+            'icon'        => 'fas fa-fw fa-box',
+            'label_color' => 'success',
+        ],
+        [
+            'text'        => 'Calendar',
+            'url'         => 'calendar',
+            'icon'        => 'far fa-fw fa-calendar',
             'label_color' => 'success',
         ],
         ['header' => 'account_settings'],

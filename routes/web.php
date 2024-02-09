@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
-
+use App\Http\Controllers\CalenderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +23,13 @@ Route::get('/', function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('products', ProductController::class);
+    Route::controller(CalenderController::class)->group(function () {
+        Route::get('/calendar', 'index');
+        Route::post('/calendar/fullcalenderAjax', 'ajax');
+    });
+    // Route::get('/calendar', function () {
+    //     return view('calendar/index');
+    // });
 });
 
 
