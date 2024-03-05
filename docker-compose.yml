@@ -20,7 +20,7 @@ services:
     networks:
       - laravel_network
   db:
-    image: mysql:5.7
+    image: mysql:8.0.26
     platform: linux/amd64
     container_name: laravel_db_admin
     ports:
@@ -28,20 +28,17 @@ services:
     volumes:
       - "laravel_database:/var/lib/mysql"
     environment:
-      MYSQL_ROOT_PASSWORD: laravel2024!
-      MYSQL_USER: laravel
-      MYSQL_PASSWORD: secret
       MYSQL_DATABASE: laravel
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: UrI9OoeEI1HEyVgg
+      MYSQL_ROOT_PASSWORD: laravel2024!
     networks:
       - laravel_network
   redis:
     image: redis:7.2-alpine
-    container_name: laravel_redis_admin
+    container_name: laravel_redis
     ports:
       - "6379:6379"
-    environment:
-      - REDIS_PASSWORD=laravel
-      - REDIS_PORT=6379
     networks:
       - laravel_network
   phpmyadmin:
@@ -56,12 +53,3 @@ services:
            PMA_HOST: db
        networks:
            - laravel_network
-  mongo:
-       image: mongo:4.4.12
-       ports:
-        - "27017:27017"
-       volumes:
-        - mongodb-data:/data/db
-       container_name: laravel_mongo_db_admin
-       networks:
-        - laravel_network

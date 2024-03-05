@@ -10,8 +10,10 @@
 - PDO-Mysql PHP extension 
 - docker-php-ext-enable extension
 
+
 ### :heavy_check_mark:	Docker
 
+- <code> rm -f composer.lock && rm -f .env && rm -Rf vendor</code>
 - <code>docker compose build</code>
 - <code>docker compose up -d</code>
 

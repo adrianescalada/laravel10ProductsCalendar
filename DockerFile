@@ -12,6 +12,7 @@ RUN apt-get update && \
     libicu-dev \
     libzip-dev \
     nodejs npm \
+    redis-server \
     && rm -rf /var/lib/apt/lists/*
 
 # Instala y habilita las extensiones de PHP necesarias para laravel
@@ -21,13 +22,34 @@ RUN docker-php-ext-configure intl && \
     intl \
     zip
 
-# Instala y habilita la extensión MongoDB para PHP
-RUN pecl install mongodb && \
-    docker-php-ext-enable mongodb
+# Instala la extensión de PHP para Redis
+RUN pecl install redis \
+    && docker-php-ext-enable redis
 
-# Habilita la extensión MongoDB para PHP
-RUN docker-php-ext-enable mongodb
+# Agrega la configuración para la extensión de Redis en php.ini
+RUN echo "extension=redis.so" >> /usr/local/etc/php/php.ini
 
+# Instala Xdebug
+RUN pecl install xdebug && \
+    docker-php-ext-enable xdebug
+
+# Copia el código fuente de la aplicación Laravel al contenedor
+COPY . /var/www/laravel
+
+# Copia el archivo de configuración de Apache
+COPY ./docker/laravel.conf /etc/apache2/sites-available/000-default.conf
+
+# Copia el archivo php.ini
+COPY ./docker/php.ini /usr/local/etc/php/php.ini
+
+# Copia el script de entrada
+COPY ./entrypoint.sh /usr/local/bin/entrypoint.sh
+
+# Instalamos dentro de la imagen la última versión de composer, para ello copiamos la imagen disponible en el repositorio:
+COPY --from=composer:2.0.13 /usr/bin/composer /usr/bin/composer
+
+# Establece permisos de ejecución en el script de entrada
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Instala Composer globalmente
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -41,13 +63,10 @@ WORKDIR /var/www/laravel
 # Establecemos la raíz web de Apache en el directorio público del proyecto
 RUN sed -ri -e 's!/var/www/laravel!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-ENV APACHE_DOCUMENT_ROOT /var/www/laravel/public
+ENV APACHE_DOCUMENT_ROOT /var/www/laravel
 
 # Copia el código fuente de la aplicación laravel al contenedor
 COPY . .
-
-# Instala las dependencias del proyecto utilizando Composer
-RUN export COMPOSER_ALLOW_SUPERUSER=1 && composer install --no-scripts --no-interaction
 
 # Enable a2mods
 RUN a2enmod rewrite
@@ -56,12 +75,25 @@ RUN a2enmod proxy
 RUN a2enmod proxy_http
 RUN a2enmod proxy_wstunnel
 
+# Creamos un usuario de sistema para ejecutar los comando Composer y Artisan:
+#RUN useradd -G www-data,root -u $uid $user -d /home/$user
+RUN mkdir -p /var/www/laravel/.composer
+
+RUN mkdir -p /var/www/laravel
+
 # Cambia los permisos para que Apache pueda escribir en ciertos directorios
-RUN chown -R www-data:www-data /var/
-RUN chmod -R 777 /var/www/laravel
+RUN chown -R www-data:www-data /var/www/laravel
+RUN chmod -R 775 /var/www/laravel/storage /var/www/laravel/bootstrap/cache
+
+
+# Instala las dependencias del proyecto utilizando Composer
+RUN export COMPOSER_ALLOW_SUPERUSER=1 && composer install --no-scripts --no-interaction
 
 # Expone el puerto 80 para que Apache pueda escuchar
 EXPOSE 80
+
+# Establece el script de entrada como el comando por defecto al iniciar el contenedor
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Comando que se ejecuta cuando se inicia el contenedor
 CMD ["apache2-foreground"]
